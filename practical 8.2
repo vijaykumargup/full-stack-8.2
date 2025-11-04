@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JWT Protected Route Simulation</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+.container {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.2);
+    width: 400px;
+    text-align: left;
+}
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+button:hover {
+    background-color: #0069d9;
+}
+pre {
+    background: #222;
+    color: #efe;
+    padding: 10px;
+    border-radius: 5px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h2>JWT Authentication Demo</h2>
+
+<label>Username:</label>
+<input type="text" id="username" placeholder="testuser" style="width:95%; padding:8px;">
+
+<br><br>
+
+<label>Password:</label>
+<input type="password" id="password" placeholder="password123" style="width:95%; padding:8px;">
+
+<br>
+
+<button onclick="login()">Login</button>
+<button onclick="accessProtected()">Access Protected Route</button>
+
+<h3>Output:</h3>
+<pre id="output"></pre>
+</div>
+
+<script>
+let token = null;
+
+// Simulate backend login
+function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+    const output = document.getElementById("output");
+
+    if (user === "testuser" && pass === "password123") {
+        token = btoa(JSON.stringify({
+            id: 1,
+            username: user,
+            iat: Date.now(),
+            exp: Date.now() + 60000 // expires in 1 minute
+        }));
+
+        output.textContent = JSON.stringify({
+            message: "Login success",
+            token: token
+        }, null, 2);
+    } else {
+        output.textContent = JSON.stringify({
+            message: "Invalid credentials"
+        }, null, 2);
+    }
+}
+
+// Protected route simulation
+function accessProtected() {
+    const output = document.getElementById("output");
+
+    if (!token) {
+        output.textContent = JSON.stringify({ message: "Token missing" }, null, 2);
+        return;
+    }
+
+    // decode token
+    let decoded = JSON.parse(atob(token));
+    const now = Date.now();
+
+    if (decoded.exp < now) {
+        output.textContent = JSON.stringify({ message: "Invalid or expired token" }, null, 2);
+    } else {
+        output.textContent = JSON.stringify({
+            message: "✅ Protected route accessed",
+            user: {
+                id: decoded.id,
+                username: decoded.username,
+                iat: decoded.iat,
+                exp: decoded.exp
+            }
+        }, null, 2);
+    }
+}
+</script>
+</body>
+</html>
